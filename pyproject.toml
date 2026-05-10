@@ -1,0 +1,17 @@
+[project]
+name = "static-site-generator"
+version = "0.1.0"
+description = "Static site generator built as part of the boot.dev backend developer course"
+readme = "README.md"
+authors = [
+    { name = "Henrik Wilhelmsen", email = "henrik@hwanimation.tech" }
+]
+requires-python = ">=3.14"
+dependencies = []
+
+[project.scripts]
+static-site-generator = "static_site_generator:main"
+
+[build-system]
+requires = ["uv_build>=0.11.3,<0.12.0"]
+build-backend = "uv_build"
