@@ -1,0 +1,17 @@
+line-length = 88
+src = ["src", "tests"]
+target-version = "py314"
+
+[format]
+docstring-code-format = true
+
+[lint]
+select = ["ALL"]
+ignore = [
+    "D",    # missing docstrings
+    "T201", # print usage
+]
+per-file-ignores = { "tests/*" = [
+    "S101", # assert usage
+] }
+pydocstyle.convention = "google"
