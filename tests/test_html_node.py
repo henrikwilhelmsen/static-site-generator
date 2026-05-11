@@ -1,6 +1,6 @@
 import unittest
 
-from static_site_generator.html_node import HTMLNode
+from static_site_generator.html_node import HTMLNode, LeafNode
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -20,6 +20,39 @@ class TestHTMLNode(unittest.TestCase):
         html_node = HTMLNode()
         result = html_node.props_to_html()
         assert result == expected
+
+
+class TestLeafNode(unittest.TestCase):
+    def test_to_html_no_props_no_tags(self) -> None:
+        expected = "This is some text"
+        leaf_node = LeafNode(tag=None, value=expected)
+        result = leaf_node.to_html()
+        assert result == expected
+
+    def test_leaf_to_html_p(self) -> None:
+        result = LeafNode("p", "Hello, world!").to_html()
+        assert result == "<p>Hello, world!</p>"
+
+    def test_leaf_to_html_a_with_prop(self) -> None:
+        result = LeafNode(
+            "a",
+            "Click me!",
+            {"href": "https://www.google.com"},
+        ).to_html()
+        assert result == '<a href="https://www.google.com">Click me!</a>'
+
+    def test_leaf_to_html_a_with_props(self) -> None:
+        result = LeafNode(
+            "a",
+            "Click me!",
+            {
+                "href": "https://www.google.com",
+                "target": "_blank",
+            },
+        ).to_html()
+        assert (
+            result == '<a href="https://www.google.com" target="_blank">Click me!</a>'
+        )
 
 
 if __name__ == "__main__":

@@ -8,7 +8,13 @@ docstring-code-format = true
 [lint]
 select = ["ALL"]
 ignore = [
-    "D",    # missing docstrings
+    "D100", # public module docstring
+    "D101", # public class docstring
+    "D102", # public method docstring
+    "D103", # public function docstring
+    "D104", # public package docstring
+    "D105", # magic method docstring
+    "D107", # __init__  docstring
     "T201", # print usage
 ]
 per-file-ignores = { "tests/*" = [

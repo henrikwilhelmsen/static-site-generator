@@ -1,4 +1,4 @@
-from static_site_generator.html_node import HTMLNode
+from static_site_generator.html_node import HTMLNode, LeafNode
 from static_site_generator.text_node import TextNode, TextType
 
 
@@ -18,6 +18,8 @@ def main() -> None:
         ],
     )
     html_node2 = HTMLNode()
+    leaf_node = LeafNode("p", "Hello, world!")
     print(text_node)
     print(html_node)
     print(html_node2)
+    print(leaf_node)
