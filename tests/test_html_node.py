@@ -1,6 +1,6 @@
 import unittest
 
-from static_site_generator.html_node import HTMLNode, LeafNode
+from static_site_generator.html_node import HTMLNode, LeafNode, ParentNode
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -53,6 +53,35 @@ class TestLeafNode(unittest.TestCase):
         assert (
             result == '<a href="https://www.google.com" target="_blank">Click me!</a>'
         )
+
+
+class TestParentNode(unittest.TestCase):
+    def test_leaf_to_html_p(self) -> None:
+        node = ParentNode(
+            "p",
+            [
+                LeafNode("b", "Bold text"),
+                LeafNode(None, "Normal text"),
+                LeafNode("i", "italic text"),
+                LeafNode(None, "Normal text"),
+            ],
+        )
+
+        assert (
+            node.to_html()
+            == "<p><b>Bold text</b>Normal text<i>italic text</i>Normal text</p>"
+        )
+
+    def test_to_html_with_children(self) -> None:
+        child_node = LeafNode("span", "child")
+        parent_node = ParentNode("div", [child_node])
+        assert parent_node.to_html() == "<div><span>child</span></div>"
+
+    def test_to_html_with_grandchildren(self) -> None:
+        grandchild_node = LeafNode("b", "grandchild")
+        child_node = ParentNode("span", [grandchild_node])
+        parent_node = ParentNode("div", [child_node])
+        assert parent_node.to_html() == "<div><span><b>grandchild</b></span></div>"
 
 
 if __name__ == "__main__":

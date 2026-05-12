@@ -15,20 +15,20 @@ class HTMLNode:
         self.children: list[HTMLNode] | None = children
         self.props: dict[str, str] | None = props
 
-    def _to_dict(self) -> dict:
-        """Create a dict representation of self for readability with json.dumps."""
+    def to_dict(self) -> dict:
+        """Create a dict representation of self."""
         return {
             "class": type(self).__name__,
             "tag": self.tag or "None",
             "value": self.value or "None",
-            "children": [x._to_dict() for x in self.children]  # noqa: SLF001
+            "children": [x.to_dict() for x in self.children]
             if self.children is not None
             else "None",
             "props": self.props or "None",
         }
 
     def __repr__(self) -> str:
-        return json.dumps(self._to_dict(), indent=2)
+        return json.dumps(self.to_dict(), indent=2)
 
     def to_html(self) -> str:
         raise NotImplementedError
@@ -54,19 +54,6 @@ class LeafNode(HTMLNode):
         super().__init__(tag=tag, value=value, props=props)
 
     @override
-    def _to_dict(self) -> dict:
-        """Create a dict representation of self for readability with json.dumps.
-
-        Override with children removed, since leaf nodes have no children.
-        """
-        return {
-            "class": type(self).__name__,
-            "tag": self.tag or "None",
-            "value": self.value or "None",
-            "props": self.props or "None",
-        }
-
-    @override
     def to_html(self) -> str:
         """Construct a valid html string from self.
 
@@ -89,3 +76,31 @@ class LeafNode(HTMLNode):
         end_tag = f"</{self.tag}>"
 
         return f"{start_tag}{self.value}{end_tag}"
+
+
+class ParentNode(HTMLNode):
+    def __init__(
+        self,
+        tag: str,
+        children: list[HTMLNode],
+        props: dict[str, str] | None = None,
+    ) -> None:
+        super().__init__(tag=tag, children=children, props=props)
+
+    @override
+    def to_html(self) -> str:
+        """Construct a valid html string from self."""
+        if not self.tag:
+            msg = "No tag set, parent nodes must have a tag"
+            raise ValueError(msg)
+
+        if not self.children:
+            msg = "No child nodes, parent nodes must have children"
+            raise ValueError(msg)
+
+        html_props = self.props_to_html()
+        start_tag = f"<{self.tag} {html_props}>" if html_props else f"<{self.tag}>"
+        end_tag = f"</{self.tag}>"
+        body = "".join([x.to_html() for x in self.children])
+
+        return f"{start_tag}{body}{end_tag}"
