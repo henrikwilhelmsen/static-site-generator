@@ -1,1 +1,1 @@
-uv run python -m unittest discover -s tests
+uv run python -m pytest tests

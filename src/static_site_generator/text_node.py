@@ -1,6 +1,8 @@
 import json
 from enum import Enum
 
+from static_site_generator.html_node import HTMLNode, LeafNode
+
 
 class TextType(Enum):
     PLAIN = "plain"
@@ -35,3 +37,38 @@ class TextNode:
             },
             indent=2,
         )
+
+
+def text_node_to_html_node(text_node: TextNode) -> HTMLNode:
+    match text_node.text_type:
+        case TextType.PLAIN:
+            return LeafNode(tag=None, value=text_node.text)
+        case TextType.BOLD:
+            return LeafNode(tag="b", value=text_node.text)
+        case TextType.ITALIC:
+            return LeafNode(tag="i", value=text_node.text)
+        case TextType.CODE:
+            return LeafNode(tag="code", value=text_node.text)
+        case TextType.LINK:
+            if text_node.url is None:
+                msg = "Link text node is missing a URL"
+                raise ValueError(msg)
+
+            return LeafNode(
+                tag="a",
+                value=text_node.text,
+                props={"href": text_node.url},
+            )
+        case TextType.IMAGE:
+            if text_node.url is None:
+                msg = "Image text node is missing a URL"
+                raise ValueError(msg)
+
+            return LeafNode(
+                tag="img",
+                value=text_node.text,
+                props={"src": text_node.url},
+            )
+        case _:
+            msg = f"Invalid text type for node '{text_node}'"
+            raise ValueError
