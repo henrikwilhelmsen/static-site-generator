@@ -37,7 +37,7 @@ class TestTextNode(unittest.TestCase):
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
     def test_plain(self) -> None:
-        text_node = TextNode("This is a text node", TextType.PLAIN)
+        text_node = TextNode("This is a text node", TextType.TEXT)
         html_node = text_node_to_html_node(text_node)
         assert html_node.tag is None
         assert html_node.value == "This is a text node"
