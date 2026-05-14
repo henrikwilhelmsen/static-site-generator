@@ -1,3 +1,5 @@
+import re
+
 from static_site_generator.text_node import TextNode, TextType
 
 
@@ -42,3 +44,15 @@ def split_nodes_delimiter(
                 new_nodes.append(TextNode(text=t, text_type=text_type))
 
     return new_nodes
+
+
+def extract_markdown_images(text: str) -> list[tuple[str]]:
+    # Match on '![any text](any text)'
+    pattern = r"!\[([^\[\]]*)\]\(([^\(\)]*)\)"
+    return re.findall(pattern, text)
+
+
+def extract_markdown_links(text: str) -> list[tuple[str]]:
+    # Same pattern as for images, but specifically checking that there is no leading '!'
+    pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
+    return re.findall(pattern, text)
