@@ -6,6 +6,8 @@ from static_site_generator.parsing import (
     extract_markdown_images,
     extract_markdown_links,
     split_nodes_delimiter,
+    split_nodes_image,
+    split_nodes_link,
 )
 from static_site_generator.text_node import TextNode, TextType
 
@@ -177,3 +179,159 @@ def test_extract_markdown_images(text: str, expected: str) -> None:
 def test_extract_markdown_links(text: str, expected: str) -> None:
     matches = extract_markdown_links(text)
     assert matches == expected
+
+
+@pytest.mark.parametrize(
+    ("old_nodes", "expected"),
+    [
+        (
+            [
+                TextNode(
+                    "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) "
+                    "and another ![second image](https://i.imgur.com/3elNhQu.png)",
+                    TextType.TEXT,
+                ),
+            ],
+            [
+                TextNode("This is text with an ", TextType.TEXT),
+                TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+                TextNode(" and another ", TextType.TEXT),
+                TextNode(
+                    "second image",
+                    TextType.IMAGE,
+                    "https://i.imgur.com/3elNhQu.png",
+                ),
+            ],
+        ),
+        (
+            [
+                TextNode(
+                    "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)",
+                    TextType.TEXT,
+                ),
+            ],
+            [
+                TextNode("This is text with an ", TextType.TEXT),
+                TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+            ],
+        ),
+        (
+            [
+                TextNode("This is text with no image", TextType.TEXT),
+            ],
+            [
+                TextNode("This is text with no image", TextType.TEXT),
+            ],
+        ),
+        (
+            [
+                TextNode(
+                    "This is text with a [link](https://i.imgur.com/zjjcJKZ.png)",
+                    TextType.TEXT,
+                ),
+            ],
+            [
+                TextNode(
+                    "This is text with a [link](https://i.imgur.com/zjjcJKZ.png)",
+                    TextType.TEXT,
+                ),
+            ],
+        ),
+        (
+            [
+                TextNode(
+                    "![image only](https://i.imgur.com/zjjcJKZ.png)",
+                    TextType.TEXT,
+                ),
+            ],
+            [
+                TextNode(
+                    "image only",
+                    TextType.IMAGE,
+                    url="https://i.imgur.com/zjjcJKZ.png",
+                ),
+            ],
+        ),
+    ],
+)
+def test_split_images(old_nodes: list[TextNode], expected: list[TextNode]) -> None:
+    new_nodes = split_nodes_image(old_nodes)
+    assert new_nodes == expected
+
+
+@pytest.mark.parametrize(
+    ("old_nodes", "expected"),
+    [
+        (
+            [
+                TextNode(
+                    "This is text with a [link](https://i.imgur.com/zjjcJKZ.png) "
+                    "and another [second link](https://i.imgur.com/3elNhQu.png)",
+                    TextType.TEXT,
+                ),
+            ],
+            [
+                TextNode("This is text with a ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "https://i.imgur.com/zjjcJKZ.png"),
+                TextNode(" and another ", TextType.TEXT),
+                TextNode(
+                    "second link",
+                    TextType.LINK,
+                    "https://i.imgur.com/3elNhQu.png",
+                ),
+            ],
+        ),
+        (
+            [
+                TextNode(
+                    "This is text with a [link](https://i.imgur.com/zjjcJKZ.png)",
+                    TextType.TEXT,
+                ),
+            ],
+            [
+                TextNode("This is text with a ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "https://i.imgur.com/zjjcJKZ.png"),
+            ],
+        ),
+        (
+            [
+                TextNode("This is text with no link", TextType.TEXT),
+            ],
+            [
+                TextNode("This is text with no link", TextType.TEXT),
+            ],
+        ),
+        (
+            [
+                TextNode(
+                    "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)",
+                    TextType.TEXT,
+                ),
+            ],
+            [
+                TextNode(
+                    "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)",
+                    TextType.TEXT,
+                ),
+            ],
+        ),
+        (
+            [
+                TextNode(
+                    "[link only](https://i.imgur.com/zjjcJKZ.png)",
+                    TextType.TEXT,
+                ),
+            ],
+            [
+                TextNode(
+                    "link only",
+                    TextType.LINK,
+                    url="https://i.imgur.com/zjjcJKZ.png",
+                ),
+            ],
+        ),
+    ],
+)
+def test_split_links(old_nodes: list[TextNode], expected: list[TextNode]) -> None:
+    new_nodes = split_nodes_link(old_nodes)
+    assert new_nodes == expected
