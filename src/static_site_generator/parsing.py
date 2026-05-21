@@ -43,8 +43,8 @@ def split_nodes_delimiter(
             continue
 
         if delimiter not in old_node.text:
-            msg = f"No delimiter '{delimiter}' in text '{old_node.text}'"
-            raise ValueError(msg)
+            new_nodes.append(old_node)
+            continue
 
         # If we have an uneven amount of delimiters, we are missing a closing one.
         if old_node.text.count(delimiter) % 2 != 0:
@@ -139,3 +139,19 @@ def split_nodes_image(
     into text nodes and image nodes.
     """
     return split_nodes_url_type(old_nodes=old_nodes, url_type=TextType.IMAGE)
+
+
+def text_to_text_nodes(text: str) -> list[TextNode]:
+    """Parse the given text into a list of TextNodes."""
+    nodes: list[TextNode] = [TextNode(text=text, text_type=TextType.TEXT)]
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    nodes = split_nodes_image(nodes)
+    return split_nodes_link(nodes)
+
+
+def markdown_to_blocks(markdown: str) -> list[str]:
+    """Split the given document on double newline to get a list of text blocks."""
+    blocks = [x.strip() for x in markdown.split("\n\n")]
+    return [x for x in blocks if x]
