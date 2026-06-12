@@ -1,1 +1,4 @@
-words = ["nthe"]
+words = [
+    "maxsplit",
+    "nthe",
+]

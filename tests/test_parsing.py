@@ -468,8 +468,16 @@ the **same** even with inline stuff
             "<div><pre><code>This is text that _should_ remain\nthe **same** even "
             "with inline stuff\n</code></pre></div>",
         ),
+        (
+            """
+### This is a header with some **bold** and _italic_ text
+""",
+            "<div><h3>This is a header with some <b>bold</b> and <i>italic</i> "
+            "text</h3></div>",
+        ),
     ],
 )
 def test_markdown_to_html_node(markdown: str, expected_html: str) -> None:
     node = markdown_to_html_node(markdown)
-    assert node.to_html() == expected_html
+    result = node.to_html()
+    assert result == expected_html

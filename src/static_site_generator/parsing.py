@@ -232,9 +232,38 @@ def block_to_block_type(block: str) -> BlockType:
     return BlockType.PARAGRAPH
 
 
-def markdown_to_html_node(markdown: str) -> HTMLParentNode:
+def text_to_children(text: str) -> list[HTMLNode]:
+    text_nodes = text_to_text_nodes(text)
+    return [text_node_to_html_node(x) for x in text_nodes]
+
+
+def markdown_to_html_node(markdown: str) -> HTMLNode:
     blocks = markdown_to_blocks(markdown)
+    root_children: list[HTMLNode] = []
+
     for block in blocks:
         block_type = block_to_block_type(block)
 
-    raise NotImplementedError
+        match block_type:
+            case BlockType.HEADING:
+                block_split = block.split(" ", maxsplit=1)
+                root_children.append(
+                    HTMLParentNode(
+                        tag=f"h{block_split[0].count('#')}",
+                        children=text_to_children(block_split[1]),
+                    ),
+                )
+
+            case BlockType.CODE:
+                pass
+
+            case BlockType.QUOTE:
+                pass
+
+            case BlockType.UNORDERED_LIST:
+                pass
+
+            case BlockType.PARAGRAPH:
+                pass
+
+    return HTMLParentNode(tag="div", children=root_children)
