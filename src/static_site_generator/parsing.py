@@ -1,7 +1,49 @@
 import re
 from typing import Literal
 
-from static_site_generator.text_node import TextNode, TextType
+from static_site_generator.models import (
+    BlockType,
+    HTMLLeafNode,
+    HTMLNode,
+    HTMLParentNode,
+    TextNode,
+    TextType,
+)
+
+
+def text_node_to_html_node(text_node: TextNode) -> HTMLNode:
+    match text_node.text_type:
+        case TextType.TEXT:
+            return HTMLLeafNode(tag=None, value=text_node.text)
+        case TextType.BOLD:
+            return HTMLLeafNode(tag="b", value=text_node.text)
+        case TextType.ITALIC:
+            return HTMLLeafNode(tag="i", value=text_node.text)
+        case TextType.CODE:
+            return HTMLLeafNode(tag="code", value=text_node.text)
+        case TextType.LINK:
+            if text_node.url is None:
+                msg = "Link text node is missing a URL"
+                raise ValueError(msg)
+
+            return HTMLLeafNode(
+                tag="a",
+                value=text_node.text,
+                props={"href": text_node.url},
+            )
+        case TextType.IMAGE:
+            if text_node.url is None:
+                msg = "Image text node is missing a URL"
+                raise ValueError(msg)
+
+            return HTMLLeafNode(
+                tag="img",
+                value=text_node.text,
+                props={"src": text_node.url},
+            )
+        case _:
+            msg = f"Invalid text type for node '{text_node}'"
+            raise ValueError
 
 
 def extract_markdown_images(text: str) -> list[tuple[str, str]]:
@@ -155,3 +197,44 @@ def markdown_to_blocks(markdown: str) -> list[str]:
     """Split the given document on double newline to get a list of text blocks."""
     blocks = [x.strip() for x in markdown.split("\n\n")]
     return [x for x in blocks if x]
+
+
+def block_to_block_type(block: str) -> BlockType:
+    """Return the block type of the given block of markdown text.
+
+    Assumes that all leading and trailing whitespace has been removed.
+    """
+    lines = block.splitlines()
+
+    # Headings start with 1-6 # and a space
+    heading_pattern = re.compile(r"^#{1,6} ")
+    if heading_pattern.match(block) is not None:
+        return BlockType.HEADING
+
+    # Code starts and ends with three backticks `
+    if block.startswith("```") and block.endswith("```"):
+        return BlockType.CODE
+
+    # Every line in a quote block must start with >
+    if all(line.startswith(">") for line in lines):
+        return BlockType.QUOTE
+
+    # Every line in an unordered list must start with -
+    if all(line.startswith("-") for line in lines):
+        return BlockType.UNORDERED_LIST
+
+    # Every line in an ordered list must start with a number followed by a . and a space
+    ordered_list_pattern = re.compile(r"^\d+\. ")
+    if ordered_list_pattern.match(block) is not None:
+        return BlockType.ORDERED_LIST
+
+    # No matches to above rules, block is a paragraph
+    return BlockType.PARAGRAPH
+
+
+def markdown_to_html_node(markdown: str) -> HTMLParentNode:
+    blocks = markdown_to_blocks(markdown)
+    for block in blocks:
+        block_type = block_to_block_type(block)
+
+    raise NotImplementedError

@@ -1,5 +1,24 @@
 import json
+from enum import Enum
 from typing import override
+
+
+class TextType(Enum):
+    TEXT = "text"
+    BOLD = "bold"
+    ITALIC = "italic"
+    CODE = "code"
+    LINK = "link"
+    IMAGE = "image"
+
+
+class BlockType(Enum):
+    PARAGRAPH = "paragraph"
+    HEADING = "heading"
+    CODE = "code"
+    QUOTE = "quote"
+    UNORDERED_LIST = "unordered_list"
+    ORDERED_LIST = "ordered_list"
 
 
 class HTMLNode:
@@ -44,7 +63,7 @@ class HTMLNode:
         return " ".join(html_parts)
 
 
-class LeafNode(HTMLNode):
+class HTMLLeafNode(HTMLNode):
     def __init__(
         self,
         tag: str | None,
@@ -78,7 +97,7 @@ class LeafNode(HTMLNode):
         return f"{start_tag}{self.value}{end_tag}"
 
 
-class ParentNode(HTMLNode):
+class HTMLParentNode(HTMLNode):
     def __init__(
         self,
         tag: str,
@@ -104,3 +123,29 @@ class ParentNode(HTMLNode):
         body = "".join([x.to_html() for x in self.children])
 
         return f"{start_tag}{body}{end_tag}"
+
+
+class TextNode:
+    def __init__(self, text: str, text_type: TextType, url: str | None = None) -> None:
+        self.text: str = text
+        self.text_type: TextType = text_type
+        self.url: str | None = url
+
+    def __eq__(self, other: object) -> bool:
+        if type(other) is type(self):
+            return self.__dict__ == other.__dict__
+        return False
+
+    def __hash__(self) -> int:
+        return hash((self.text, self.text_type, self.url))
+
+    def __repr__(self) -> str:
+        return json.dumps(
+            {
+                "class": "TextNode",
+                "text": self.text,
+                "text_type": self.text_type.value,
+                "url": self.url,
+            },
+            indent=2,
+        )

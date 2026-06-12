@@ -2,7 +2,8 @@ import unittest
 
 import pytest
 
-from static_site_generator.text_node import TextNode, TextType, text_node_to_html_node
+from static_site_generator.models import TextNode, TextType
+from static_site_generator.parsing import text_node_to_html_node
 
 
 class TestTextNode(unittest.TestCase):

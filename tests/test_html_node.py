@@ -1,12 +1,9 @@
 import unittest
 
-from static_site_generator.html_node import HTMLNode, LeafNode, ParentNode
+from static_site_generator.models import HTMLLeafNode, HTMLNode, HTMLParentNode
 
 
 class TestHTMLNode(unittest.TestCase):
-    def test_repr(self) -> None:
-        pass
-
     def test_props_to_html(self) -> None:
         expected = 'href="https://www.google.com" target="_blank"'
         html_node = HTMLNode(
@@ -25,16 +22,16 @@ class TestHTMLNode(unittest.TestCase):
 class TestLeafNode(unittest.TestCase):
     def test_to_html_no_props_no_tags(self) -> None:
         expected = "This is some text"
-        leaf_node = LeafNode(tag=None, value=expected)
+        leaf_node = HTMLLeafNode(tag=None, value=expected)
         result = leaf_node.to_html()
         assert result == expected
 
     def test_leaf_to_html_p(self) -> None:
-        result = LeafNode("p", "Hello, world!").to_html()
+        result = HTMLLeafNode("p", "Hello, world!").to_html()
         assert result == "<p>Hello, world!</p>"
 
     def test_leaf_to_html_a_with_prop(self) -> None:
-        result = LeafNode(
+        result = HTMLLeafNode(
             "a",
             "Click me!",
             {"href": "https://www.google.com"},
@@ -42,7 +39,7 @@ class TestLeafNode(unittest.TestCase):
         assert result == '<a href="https://www.google.com">Click me!</a>'
 
     def test_leaf_to_html_a_with_props(self) -> None:
-        result = LeafNode(
+        result = HTMLLeafNode(
             "a",
             "Click me!",
             {
@@ -57,13 +54,13 @@ class TestLeafNode(unittest.TestCase):
 
 class TestParentNode(unittest.TestCase):
     def test_leaf_to_html_p(self) -> None:
-        node = ParentNode(
+        node = HTMLParentNode(
             "p",
             [
-                LeafNode("b", "Bold text"),
-                LeafNode(None, "Normal text"),
-                LeafNode("i", "italic text"),
-                LeafNode(None, "Normal text"),
+                HTMLLeafNode("b", "Bold text"),
+                HTMLLeafNode(None, "Normal text"),
+                HTMLLeafNode("i", "italic text"),
+                HTMLLeafNode(None, "Normal text"),
             ],
         )
 
@@ -73,14 +70,14 @@ class TestParentNode(unittest.TestCase):
         )
 
     def test_to_html_with_children(self) -> None:
-        child_node = LeafNode("span", "child")
-        parent_node = ParentNode("div", [child_node])
+        child_node = HTMLLeafNode("span", "child")
+        parent_node = HTMLParentNode("div", [child_node])
         assert parent_node.to_html() == "<div><span>child</span></div>"
 
     def test_to_html_with_grandchildren(self) -> None:
-        grandchild_node = LeafNode("b", "grandchild")
-        child_node = ParentNode("span", [grandchild_node])
-        parent_node = ParentNode("div", [child_node])
+        grandchild_node = HTMLLeafNode("b", "grandchild")
+        child_node = HTMLParentNode("span", [grandchild_node])
+        parent_node = HTMLParentNode("div", [child_node])
         assert parent_node.to_html() == "<div><span><b>grandchild</b></span></div>"
 
 

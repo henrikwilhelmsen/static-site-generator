@@ -2,7 +2,9 @@ import re
 
 import pytest
 
+from static_site_generator.models import BlockType, TextNode, TextType
 from static_site_generator.parsing import (
+    block_to_block_type,
     extract_markdown_images,
     extract_markdown_links,
     markdown_to_blocks,
@@ -10,8 +12,8 @@ from static_site_generator.parsing import (
     split_nodes_image,
     split_nodes_link,
     text_to_text_nodes,
+    markdown_to_html_node,
 )
-from static_site_generator.text_node import TextNode, TextType
 
 
 @pytest.mark.parametrize(
@@ -379,3 +381,95 @@ This is the same paragraph on a new line
         "This is the same paragraph on a new line",
         "- This is a list\n- with items",
     ]
+
+
+@pytest.mark.parametrize(
+    ("block", "expected_type"),
+    [
+        (
+            """
+### Some H3 Heading
+            """.strip(),
+            BlockType.HEADING,
+        ),
+        (
+            """
+```python
+from foo import bar
+bar.foo()
+```
+            """.strip(),
+            BlockType.CODE,
+        ),
+        (
+            """
+> This is
+> a
+> quote block
+            """.strip(),
+            BlockType.QUOTE,
+        ),
+        (
+            """
+This is
+just a
+regular paragraph
+            """.strip(),
+            BlockType.PARAGRAPH,
+        ),
+        (
+            """
+- This is
+- just an
+- unordered
+- list
+            """.strip(),
+            BlockType.UNORDERED_LIST,
+        ),
+        (
+            """
+1. This is
+2. an
+3. ordered
+4. list
+            """.strip(),
+            BlockType.ORDERED_LIST,
+        ),
+    ],
+)
+def test_block_to_block_type(block: str, expected_type: BlockType) -> None:
+    result = block_to_block_type(block)
+    assert result == expected_type
+
+
+@pytest.mark.parametrize(
+    ("block", "expected_type"),
+    [
+        (
+            """
+This is **bold** paragraph
+text in a p
+tag here
+
+This is another paragraph with _italic_ text and `code` here
+
+""",
+            "<div><p>This is <b>bold</b> paragraph text in a p tag here</p><p>This is "
+            "another paragraph with <i>italic</i> text and <code>code</code> "
+            "here</p></div>",
+        ),
+        (
+            """
+```
+This is text that _should_ remain
+the **same** even with inline stuff
+```
+""",
+            "<div><pre><code>This is text that _should_ remain\nthe **same** even "
+            "with inline stuff\n</code></pre></div>",
+        ),
+    ],
+)
+def test_markdown_to_html_node(markdown: str, expected_html: str) -> None:
+    node = markdown_to_html_node(markdown)
+    assert node.to_html() == expected_html
