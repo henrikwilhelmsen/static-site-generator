@@ -443,7 +443,7 @@ def test_block_to_block_type(block: str, expected_type: BlockType) -> None:
 
 
 @pytest.mark.parametrize(
-    ("block", "expected_type"),
+    ("markdown", "expected_html"),
     [
         (
             """
