@@ -8,11 +8,11 @@ from static_site_generator.parsing import (
     extract_markdown_images,
     extract_markdown_links,
     markdown_to_blocks,
+    markdown_to_html_node,
     split_nodes_delimiter,
     split_nodes_image,
     split_nodes_link,
     text_to_text_nodes,
-    markdown_to_html_node,
 )
 
 
