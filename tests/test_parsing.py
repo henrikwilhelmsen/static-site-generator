@@ -445,6 +445,7 @@ def test_block_to_block_type(block: str, expected_type: BlockType) -> None:
 @pytest.mark.parametrize(
     ("markdown", "expected_html"),
     [
+        # Paragraph
         (
             """
 This is **bold** paragraph
@@ -458,6 +459,7 @@ This is another paragraph with _italic_ text and `code` here
             "another paragraph with <i>italic</i> text and <code>code</code> "
             "here</p></div>",
         ),
+        # Code block
         (
             """
 ```
@@ -465,15 +467,49 @@ This is text that _should_ remain
 the **same** even with inline stuff
 ```
 """,
-            "<div><pre><code>This is text that _should_ remain\nthe **same** even "
+            "<div><pre><code>\nThis is text that _should_ remain\nthe **same** even "
             "with inline stuff\n</code></pre></div>",
         ),
+        # Header
         (
             """
 ### This is a header with some **bold** and _italic_ text
 """,
             "<div><h3>This is a header with some <b>bold</b> and <i>italic</i> "
             "text</h3></div>",
+        ),
+        # Block quote
+        (
+            """
+> This is a block quote with some **bold** and _italic_ text.
+> This is a block quote with some **bold** and _italic_ text
+""",
+            "<div><blockquote>This is a block quote with some <b>bold</b> and "
+            "<i>italic</i> text. "
+            "This is a block quote with some <b>bold</b> and "
+            "<i>italic</i> text</blockquote></div>",
+        ),
+        # Unordered list
+        (
+            """
+- This is an unordered list entry with some **bold** and _italic_ text
+- This is another unordered list entry with some `code` and _italic_ text
+""",
+            "<div><ul><li>This is an unordered list entry with some <b>bold</b> and "
+            "<i>italic</i> text</li>"
+            "<li>This is another unordered list entry with some <code>code</code> "
+            "and <i>italic</i> text</li></ul></div>",
+        ),
+        # Ordered list
+        (
+            """
+1. This is an ordered list entry with some **bold** and _italic_ text
+2. This is another ordered list entry with some `code` and _italic_ text
+""",
+            "<div><ol><li>This is an ordered list entry with some <b>bold</b> and "
+            "<i>italic</i> text</li>"
+            "<li>This is another ordered list entry with some <code>code</code> "
+            "and <i>italic</i> text</li></ol></div>",
         ),
     ],
 )

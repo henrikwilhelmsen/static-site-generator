@@ -233,37 +233,87 @@ def block_to_block_type(block: str) -> BlockType:
 
 
 def text_to_children(text: str) -> list[HTMLNode]:
+    """Convert the given text to a list of html nodes."""
     text_nodes = text_to_text_nodes(text)
     return [text_node_to_html_node(x) for x in text_nodes]
 
 
 def markdown_to_html_node(markdown: str) -> HTMLNode:
+    """Convert the given markdown document to an html node."""
     blocks = markdown_to_blocks(markdown)
     root_children: list[HTMLNode] = []
 
     for block in blocks:
         block_type = block_to_block_type(block)
-
         match block_type:
             case BlockType.HEADING:
-                block_split = block.split(" ", maxsplit=1)
+                heading_split = block.split(" ", maxsplit=1)
                 root_children.append(
                     HTMLParentNode(
-                        tag=f"h{block_split[0].count('#')}",
-                        children=text_to_children(block_split[1]),
+                        tag=f"h{heading_split[0].count('#')}",
+                        children=text_to_children(heading_split[1]),
                     ),
                 )
 
             case BlockType.CODE:
-                pass
+                code_body = block.removeprefix("```").removesuffix("```")
+                text_node = TextNode(text=code_body, text_type=TextType.CODE)
+                root_children.append(
+                    HTMLParentNode(
+                        tag="pre",
+                        children=[text_node_to_html_node(text_node)],
+                    ),
+                )
 
             case BlockType.QUOTE:
-                pass
+                quote_body = " ".join(
+                    [x.removeprefix(">").strip() for x in block.splitlines()],
+                )
+                root_children.append(
+                    HTMLParentNode(
+                        tag="blockquote",
+                        children=text_to_children(quote_body),
+                    ),
+                )
 
             case BlockType.UNORDERED_LIST:
-                pass
+                list_items = [x.removeprefix("-").strip() for x in block.splitlines()]
+                root_children.append(
+                    HTMLParentNode(
+                        tag="ul",
+                        children=[
+                            HTMLParentNode(
+                                tag="li",
+                                children=text_to_children(x),
+                            )
+                            for x in list_items
+                        ],
+                    ),
+                )
+
+            case BlockType.ORDERED_LIST:
+                list_items = [
+                    x.split(" ", maxsplit=1)[1].strip() for x in block.splitlines()
+                ]
+                root_children.append(
+                    HTMLParentNode(
+                        tag="ol",
+                        children=[
+                            HTMLParentNode(
+                                tag="li",
+                                children=text_to_children(x),
+                            )
+                            for x in list_items
+                        ],
+                    ),
+                )
 
             case BlockType.PARAGRAPH:
-                pass
+                root_children.append(
+                    HTMLParentNode(
+                        tag="p",
+                        children=text_to_children(" ".join(block.splitlines())),
+                    ),
+                )
 
     return HTMLParentNode(tag="div", children=root_children)
