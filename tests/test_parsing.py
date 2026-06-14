@@ -7,6 +7,7 @@ from static_site_generator.parsing import (
     block_to_block_type,
     extract_markdown_images,
     extract_markdown_links,
+    extract_title,
     markdown_to_blocks,
     markdown_to_html_node,
     split_nodes_delimiter,
@@ -517,3 +518,60 @@ def test_markdown_to_html_node(markdown: str, expected_html: str) -> None:
     node = markdown_to_html_node(markdown)
     result = node.to_html()
     assert result == expected_html
+
+
+@pytest.mark.parametrize(
+    ("markdown", "expected"),
+    [
+        (
+            """
+# Header **Title**
+""",
+            "Header **Title**",
+        ),
+        (
+            """
+# Another Header
+
+in a multiline
+document
+""",
+            "Another Header",
+        ),
+        (
+            """
+# Yet Another Header
+
+in a multiline
+document
+
+## With
+
+Several headers
+""",
+            "Yet Another Header",
+        ),
+    ],
+)
+def test_extract_title(markdown: str, expected: str) -> None:
+    assert extract_title(markdown) == expected
+
+
+@pytest.mark.parametrize(
+    "markdown",
+    [
+        """
+## Header two
+
+body
+""",
+        """
+No Header
+at
+all
+""",
+    ],
+)
+def test_extract_title_raises(markdown: str) -> None:
+    with pytest.raises(ValueError, match="Markdown does not contain a title"):
+        extract_title(markdown)

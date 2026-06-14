@@ -1,5 +1,5 @@
 import re
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from static_site_generator.models import (
     BlockType,
@@ -9,6 +9,9 @@ from static_site_generator.models import (
     TextNode,
     TextType,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def text_node_to_html_node(text_node: TextNode) -> HTMLNode:
@@ -317,3 +320,59 @@ def markdown_to_html_node(markdown: str) -> HTMLNode:
                 )
 
     return HTMLParentNode(tag="div", children=root_children)
+
+
+def extract_title(markdown: str) -> str:
+    title_lines = [x for x in markdown.splitlines() if x.startswith("# ")]
+    if not title_lines:
+        msg = "Markdown does not contain a title"
+        raise ValueError(msg)
+
+    return title_lines[0].split(" ", maxsplit=1)[1].strip()
+
+
+def generate_page(
+    source_dir: Path,
+    target_dir: Path,
+    template_file: Path,
+    basepath: str = "/",
+) -> None:
+    print(
+        f"Generating page from '{source_dir}' to '{target_dir}' using '{template_file}'",  # noqa: E501
+    )
+    source_md = source_dir.read_text(encoding="utf-8")
+    source_html = markdown_to_html_node(source_md).to_html()
+    source_title = extract_title(source_md)
+    template_html = template_file.read_text(encoding="utf-8")
+    target_html = template_html.replace("{{ Title }}", source_title).replace(
+        "{{ Content }}",
+        source_html,
+    )
+
+    if basepath != "/":
+        target_html = target_html.replace('href="/', f'href="{basepath}').replace(
+            'src="/',
+            f'src="{basepath}',
+        )
+
+    if not target_dir.parent.exists():
+        target_dir.parent.mkdir(parents=True)
+
+    target_dir.write_text(target_html)
+
+
+def generate_pages(
+    source_dir: Path,
+    target_dir: Path,
+    template_file: Path,
+    basepath: str,
+) -> None:
+    for md_file in source_dir.rglob("*.md"):
+        generate_page(
+            source_dir=md_file,
+            target_dir=target_dir
+            / md_file.relative_to(source_dir).parent
+            / f"{md_file.stem}.html",
+            template_file=template_file,
+            basepath=basepath,
+        )
