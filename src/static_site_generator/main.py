@@ -7,6 +7,7 @@ from static_site_generator.parsing import generate_pages
 PROJECT_DIR = Path(__file__).parent.parent.parent
 STATIC_DIR = PROJECT_DIR / "static"
 PUBLIC_DIR = PROJECT_DIR / "public"
+DOCS_DIR = PROJECT_DIR / "docs"
 CONTENT_DIR = PROJECT_DIR / "content"
 HTML_TEMPLATE = PROJECT_DIR / "template.html"
 
@@ -38,10 +39,10 @@ def copy_tree(src: Path, dst: Path) -> None:
 
 def main() -> None:
     basepath = sys.argv[1] if len(sys.argv) > 1 else "/"
-    copy_tree(STATIC_DIR, PUBLIC_DIR)
+    copy_tree(STATIC_DIR, DOCS_DIR)
     generate_pages(
         source_dir=CONTENT_DIR,
-        target_dir=PUBLIC_DIR,
+        target_dir=DOCS_DIR,
         template_file=HTML_TEMPLATE,
         basepath=basepath,
     )
