@@ -70,7 +70,9 @@ ruff_check:
     reports:
       codequality: $CI_PROJECT_DIR/code-quality-report.json
   script:
-    - ruff check --output-format=gitlab > code-quality-report.json
+    - |
+      set -o pipefail
+      ruff check --output-format=gitlab | tee code-quality-report.json
 
 ruff_format:
   extends: .base_ruff
