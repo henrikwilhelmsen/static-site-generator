@@ -1,3 +1,9 @@
+# Copyright (C) 2026 Henrik Wilhelmsen.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
+
 import re
 
 import pytest
@@ -147,8 +153,10 @@ def test_split_nodes_delimiter_raises(
             [("image", "https://i.imgur.com/zjjcJKZ.png")],
         ),
         (
-            "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and "
-            "![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)",
+            (
+                "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and "
+                "![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
+            ),
             [
                 ("rick roll", "https://i.imgur.com/aKaOqIh.gif"),
                 ("obi wan", "https://i.imgur.com/fJRm4Vk.jpeg"),
@@ -165,8 +173,10 @@ def test_extract_markdown_images(text: str, expected: str) -> None:
     ("text", "expected"),
     [
         (
-            "This is text with a link [to boot dev](https://www.boot.dev) and "
-            "[to youtube](https://www.youtube.com/@bootdotdev)",
+            (
+                "This is text with a link [to boot dev](https://www.boot.dev) and "
+                "[to youtube](https://www.youtube.com/@bootdotdev)"
+            ),
             [
                 ("to boot dev", "https://www.boot.dev"),
                 ("to youtube", "https://www.youtube.com/@bootdotdev"),
@@ -339,8 +349,10 @@ def test_split_links(old_nodes: list[TextNode], expected: list[TextNode]) -> Non
     ("text", "expected"),
     [
         (
-            "This is **text** with an _italic_ word and a `code block` and an "
-            "![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)",
+            (
+                "This is **text** with an _italic_ word and a `code block` and an "
+                "![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+            ),
             [
                 TextNode("This is ", TextType.TEXT),
                 TextNode("text", TextType.BOLD),
@@ -378,8 +390,10 @@ This is the same paragraph on a new line
     blocks = markdown_to_blocks(md)
     assert blocks == [
         "This is **bolded** paragraph",
-        "This is another paragraph with _italic_ text and `code` here\n"
-        "This is the same paragraph on a new line",
+        (
+            "This is another paragraph with _italic_ text and `code` here\n"
+            "This is the same paragraph on a new line"
+        ),
         "- This is a list\n- with items",
     ]
 
@@ -456,9 +470,12 @@ tag here
 This is another paragraph with _italic_ text and `code` here
 
 """,
-            "<div><p>This is <b>bold</b> paragraph text in a p tag here</p><p>This is "
-            "another paragraph with <i>italic</i> text and <code>code</code> "
-            "here</p></div>",
+            (
+                "<div><p>This is <b>bold</b> paragraph text in a p tag here</p>"
+                "<p>This is "
+                "another paragraph with <i>italic</i> text and <code>code</code> "
+                "here</p></div>"
+            ),
         ),
         # Code block
         (
@@ -468,16 +485,20 @@ This is text that _should_ remain
 the **same** even with inline stuff
 ```
 """,
-            "<div><pre><code>\nThis is text that _should_ remain\nthe **same** even "
-            "with inline stuff\n</code></pre></div>",
+            (
+                "<div><pre><code>\nThis is text that _should_ remain\nthe **same** "
+                "even with inline stuff\n</code></pre></div>"
+            ),
         ),
         # Header
         (
             """
 ### This is a header with some **bold** and _italic_ text
 """,
-            "<div><h3>This is a header with some <b>bold</b> and <i>italic</i> "
-            "text</h3></div>",
+            (
+                "<div><h3>This is a header with some <b>bold</b> and <i>italic</i> "
+                "text</h3></div>"
+            ),
         ),
         # Block quote
         (
@@ -485,10 +506,12 @@ the **same** even with inline stuff
 > This is a block quote with some **bold** and _italic_ text.
 > This is a block quote with some **bold** and _italic_ text
 """,
-            "<div><blockquote>This is a block quote with some <b>bold</b> and "
-            "<i>italic</i> text. "
-            "This is a block quote with some <b>bold</b> and "
-            "<i>italic</i> text</blockquote></div>",
+            (
+                "<div><blockquote>This is a block quote with some <b>bold</b> and "
+                "<i>italic</i> text. "
+                "This is a block quote with some <b>bold</b> and "
+                "<i>italic</i> text</blockquote></div>"
+            ),
         ),
         # Unordered list
         (
@@ -496,10 +519,12 @@ the **same** even with inline stuff
 - This is an unordered list entry with some **bold** and _italic_ text
 - This is another unordered list entry with some `code` and _italic_ text
 """,
-            "<div><ul><li>This is an unordered list entry with some <b>bold</b> and "
-            "<i>italic</i> text</li>"
-            "<li>This is another unordered list entry with some <code>code</code> "
-            "and <i>italic</i> text</li></ul></div>",
+            (
+                "<div><ul><li>This is an unordered list entry with some <b>bold</b> "
+                "and <i>italic</i> text</li>"
+                "<li>This is another unordered list entry with some <code>code</code> "
+                "and <i>italic</i> text</li></ul></div>"
+            ),
         ),
         # Ordered list
         (
@@ -507,10 +532,12 @@ the **same** even with inline stuff
 1. This is an ordered list entry with some **bold** and _italic_ text
 2. This is another ordered list entry with some `code` and _italic_ text
 """,
-            "<div><ol><li>This is an ordered list entry with some <b>bold</b> and "
-            "<i>italic</i> text</li>"
-            "<li>This is another ordered list entry with some <code>code</code> "
-            "and <i>italic</i> text</li></ol></div>",
+            (
+                "<div><ol><li>This is an ordered list entry with some <b>bold</b> and "
+                "<i>italic</i> text</li>"
+                "<li>This is another ordered list entry with some <code>code</code> "
+                "and <i>italic</i> text</li></ol></div>"
+            ),
         ),
     ],
 )
