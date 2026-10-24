@@ -1,0 +1,99 @@
+variables:
+  PYTHON_VERSION: "3.15"
+  RUFF_VERSION: "0.17.1"
+  UV_VERSION: "0.13"
+  UV_BASE_LAYER: trixie
+  # GitLab CI creates a separate mount point for the build directory,
+  # so we need to copy instead of using hard links.
+  UV_LINK_MODE: copy
+
+stages:
+  - secret_detection
+  - audit
+  - build
+  - test
+
+include:
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+
+secret_detection:
+  stage: secret_detection
+  allow_failure: false
+
+audit:
+  stage: audit
+  image: ghcr.io/astral-sh/uv:$UV_VERSION-python$PYTHON_VERSION-$UV_BASE_LAYER
+  script:
+    - cd $CI_PROJECT_DIR
+    - uv audit --preview-features audit
+
+.base_ruff:
+  stage: build
+  image: ghcr.io/astral-sh/ruff:$RUFF_VERSION-alpine
+  interruptible: true
+  before_script:
+    - cd $CI_PROJECT_DIR
+    - ruff --version
+
+.base_uv:
+  stage: build
+  image: ghcr.io/astral-sh/uv:$UV_VERSION-python$PYTHON_VERSION-$UV_BASE_LAYER
+  variables:
+    UV_CACHE_DIR: .uv-cache
+  cache:
+    - key:
+        files:
+          - uv.lock
+      paths:
+        - $UV_CACHE_DIR
+      policy: pull
+  before_script:
+    - cd $CI_PROJECT_DIR
+    - uv --version
+    - uv sync --locked --dev --all-extras
+    - uv cache prune --ci
+
+build:
+  extends: .base_uv
+  stage: build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+  script:
+    - uv build --no-cache
+
+ruff_check:
+  extends: .base_ruff
+  stage: test
+  artifacts:
+    reports:
+      codequality: $CI_PROJECT_DIR/code-quality-report.json
+  script:
+    - |
+      set -o pipefail
+      ruff check --output-format=gitlab | tee code-quality-report.json
+
+ruff_format:
+  extends: .base_ruff
+  stage: test
+  script:
+    - ruff format --diff
+
+ty:
+  extends: .base_uv
+  stage: test
+  script: uv run ty check -v
+
+pytest:
+  extends: .base_uv
+  stage: test
+  script: uv run pytest --cov --cov-report term --cov-report xml:coverage.xml --junitxml=report.xml
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+  coverage: /TOTAL.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/
