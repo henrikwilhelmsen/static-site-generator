@@ -23,5 +23,6 @@ exclude-newer = "1 week"
 dev = [
     "pytest>=9.0.3",
     "ruff>=0.17.1",
-    "ty>=0.0.34",
+    "pytest>=9.1.1",
+    "ty>=0.0.89",
 ]
