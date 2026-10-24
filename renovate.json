@@ -9,6 +9,7 @@
   },
   "packageRules": [
     {
+      "groupName": "Python dev dependencies",
       "matchManagers": ["pep621"],
       "matchJsonata": [
         "depType = 'dependency-groups' and managerData.depGroup = 'dev'"
