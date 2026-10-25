@@ -30,7 +30,7 @@ def _copy(src: Path, dst: Path) -> None:
 
 # Assignment says to implement this, instead of using shutil.copytree, so here we are
 def copy_tree(src: Path, dst: Path) -> None:
-    """Copy the given source directory to the given destionation directory."""
+    """Copy the given source directory to the given destination directory."""
     if not src.is_dir():
         raise ValueError
 
