@@ -1,5 +1,5 @@
 include:
-  - component: $CI_SERVER_FQDN/hwanimationtech/ci-cd-components/uv-python-package@main
+  - component: $CI_SERVER_FQDN/hwanimationtech/ci-cd-components/python@main
     inputs:
       audit: true
       lint: true
