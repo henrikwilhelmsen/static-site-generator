@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "Henrik Wilhelmsen", email = "henrik@hwanimation.tech" }
 ]
-requires-python = ">=3.15.1"
+requires-python = ">=3.15.2"
 dependencies = []
 
 [project.scripts]
