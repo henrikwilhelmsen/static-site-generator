@@ -21,7 +21,7 @@ exclude-newer = "1 week"
 
 [dependency-groups]
 dev = [
-    "ruff>=0.17.5",
+    "ruff>=0.17.6",
     "pytest>=9.2.0",
     "pytest-cov>=7.1.0",
     "ty>=0.0.107",
